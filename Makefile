@@ -3,7 +3,7 @@ DOCKER_COMPOSE = docker compose -f docker/docker-compose.yaml
 
 # Commands
 up:
-	$(DOCKER_COMPOSE) up -d
+	$(DOCKER_COMPOSE) up
 down:
 	$(DOCKER_COMPOSE) down
 build:
