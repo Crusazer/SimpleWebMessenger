@@ -5,14 +5,15 @@ from sqlalchemy import pool
 
 from alembic import context
 from src.config import settings
-from src.db.models.base import Base
+from src.database.models.base import Base
+from src.database.models.user import User
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
 
 section = config.config_ini_section
-config.set_section_option(section, "DB_URL", str(settings.DB.DB_URL)+"?async_fallback=True")
+config.set_section_option(section, "DB_URL", str(settings.DB.DB_URL) + "?async_fallback=True")
 config.set_section_option(section, "DB_HOST", settings.DB.DB_HOST)
 config.set_section_option(section, "DB_PORT", settings.DB.DB_PORT)
 config.set_section_option(section, "DB_USER", settings.DB.DB_USER)
@@ -75,9 +76,7 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()
