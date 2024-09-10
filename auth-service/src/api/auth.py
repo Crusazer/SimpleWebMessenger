@@ -3,7 +3,11 @@ from pydantic import EmailStr
 
 from ..database.schemas.token import SToken
 from ..services.auth_service import AuthService
-from ..dependencies import get_authorization_service, get_token_service
+from ..dependencies import (
+    get_authorization_service,
+    get_token_service,
+    get_current_active_user,
+)
 from ..database.models.user import User
 from ..dependencies import get_current_user_for_refresh
 
@@ -17,6 +21,16 @@ async def login(
     auth_service: AuthService = Depends(get_authorization_service),
 ):
     return await auth_service.login(email, password)
+
+
+@router.post("logout")
+async def logout(
+    refresh_token: str = Form(),
+    user: User = Depends(get_current_active_user),
+    auth_service: AuthService = Depends(get_authorization_service),
+):
+    await auth_service.logout(refresh_token)
+    return {"message": "Successfully logged out"}
 
 
 @router.post("/refresh_token/", response_model=SToken)

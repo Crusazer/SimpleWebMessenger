@@ -18,7 +18,6 @@ def get_authorization_service(
 def get_token_service(
     session: AsyncSession = Depends(get_async_session),
 ) -> TokenService:
-    print(f"Return TOKEN SERVICE")
     return TokenService(session)
 
 

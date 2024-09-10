@@ -1,6 +1,4 @@
 import datetime
-
-from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..exceptions import (
@@ -30,6 +28,27 @@ class AuthService:
         refresh_token: str = self._token_service.create_refresh_token(user)
         return SToken(access_token=access_token, refresh_token=refresh_token)
 
+    @staticmethod
+    async def _add_token_to_blacklist(
+        payload: dict,
+        redis: RedisService,
+    ) -> None:
+        """Add refresh token to blacklist"""
+        exp: int = payload.get("exp")
+        if exp:
+            now = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
+            expiration_time = exp - now
+        else:
+            expiration_time = settings.JWT.REFRESH_TOKEN_LIFE
+        await redis.set_token(payload.get("jti"), "blacklist", expiration_time)
+
+    @staticmethod
+    async def _check_token_in_blacklist(
+        jti: str, redis_service: RedisService()
+    ) -> None:
+        if await redis_service.is_token_blacklisted(jti):
+            raise InvalidTokenException
+
     async def login(self, email: str, password: str) -> SToken:
         """Check password and authenticate user"""
         user = await self._repository.get_user_by_field(email=email)
@@ -41,6 +60,23 @@ class AuthService:
 
         return self._generate_tokens(user)
 
+    async def logout(self, refresh_token: str) -> None:
+        """Logout user and add refresh token to blacklist"""
+        redis = RedisService()
+        payload = self._token_service.get_current_token_payload(refresh_token)
+
+        await self._check_token_in_blacklist(payload.get("jti"), redis)
+        await self._add_token_to_blacklist(payload, redis)
+
+    async def refresh_jwt_token(self, refresh_token: str, user: User) -> SToken:
+        """Generate new pair and add old refresh to blacklist"""
+        redis = RedisService()
+        payload = self._token_service.get_current_token_payload(refresh_token)
+
+        await self._check_token_in_blacklist(payload.get("jti"), redis)
+        await self._add_token_to_blacklist(payload, redis)
+        return self._generate_tokens(user)
+
     async def register_user(self, email: str, password: str, re_password: str):
         """Create new user if not exists and passwords match"""
         if password != re_password:
@@ -50,30 +86,9 @@ class AuthService:
         s_user = SUserCreate(email=email, password=hashed_password)
 
         if await self._repository.get_user_by_field(email=s_user.email) is not None:
-            raise UserAuthenticationException(detail="Email already registered")
+            raise UserAuthenticationException(
+                detail="A user with this email already exists."
+            )
 
         user = await self._repository.create_user(s_user)
-        return self._generate_tokens(user)
-
-    async def refresh_jwt_token(self, refresh_token: str, user: User) -> SToken:
-        """Generate new pair and add old refresh to blacklist"""
-        redis = RedisService()
-        payload = self._token_service.get_current_token_payload(refresh_token)
-        jti = payload.get("jti")
-
-        # Check current refresh token in blocked list
-        if await redis.is_token_blacklisted(jti):
-            raise InvalidTokenException
-
-        # Add current refresh token to blacklist
-        exp: int = payload.get("exp")
-        if exp:
-            expiration_time = exp - int(
-                datetime.datetime.now(datetime.timezone.utc).timestamp()
-            )
-        else:
-            expiration_time = settings.JWT.REFRESH_TOKEN_LIFE
-        await redis.set_token(jti, "blacklist", expiration_time)
-
-        # Return new pair tokens
         return self._generate_tokens(user)
