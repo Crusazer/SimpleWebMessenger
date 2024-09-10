@@ -1,8 +1,8 @@
 import uuid
 
+from pydantic import EmailStr
 from sqlalchemy import Column, String, Boolean, UUID
 from sqlalchemy.orm import Mapped
-from pydantic import EmailStr
 
 from .base import Base
 

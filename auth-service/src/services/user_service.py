@@ -1,5 +1,4 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.testing.pickleable import User
 
 from ..database.repositories.user_repository import UserRepository
 

@@ -1,6 +1,6 @@
-from pydantic import PostgresDsn, RedisDsn
-from pydantic_settings import BaseSettings
 from dotenv import load_dotenv
+from pydantic import PostgresDsn
+from pydantic_settings import BaseSettings
 
 load_dotenv()
 

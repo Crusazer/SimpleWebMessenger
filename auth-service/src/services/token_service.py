@@ -4,15 +4,15 @@ import uuid
 from jwt import InvalidTokenError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..database.models.user import User
 from ..config import settings
-from ..utils.auth import encode_jwt, decode_jwt
+from ..database.models.user import User
 from ..database.repositories.user_repository import UserRepository
 from ..exceptions import (
     UserNotFoundException,
     InvalidTokenException,
     InvalidTokenTypeException,
 )
+from ..utils.auth import encode_jwt, decode_jwt
 
 
 class TokenType(enum.StrEnum):

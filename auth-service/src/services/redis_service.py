@@ -1,5 +1,6 @@
-from redis import asyncio
 import datetime
+
+from redis import asyncio
 
 from ..config import settings
 from ..exceptions import RedisException

@@ -1,15 +1,15 @@
 from fastapi import APIRouter, Depends, Form
 from pydantic import EmailStr
 
+from ..database.models.user import User
 from ..database.schemas.token import SToken
-from ..services.auth_service import AuthService
 from ..dependencies import (
     get_authorization_service,
     get_token_service,
     get_current_active_user,
 )
-from ..database.models.user import User
 from ..dependencies import get_current_user_for_refresh
+from ..services.auth_service import AuthService
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 

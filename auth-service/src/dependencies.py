@@ -1,12 +1,12 @@
 from fastapi import Depends
-from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from .database.database import get_async_session
+from .database.models.user import User
+from .exceptions import UserNotActiveException
 from .services.auth_service import AuthService
 from .services.token_service import TokenService, TokenType
-from .exceptions import UserNotActiveException
-from .database.models.user import User
 
 
 def get_authorization_service(

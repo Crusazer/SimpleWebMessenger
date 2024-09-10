@@ -1,6 +1,6 @@
 import uuid
 
-from pydantic import EmailStr, BaseModel, ConfigDict
+from pydantic import EmailStr, BaseModel
 
 
 class SUser(BaseModel):
