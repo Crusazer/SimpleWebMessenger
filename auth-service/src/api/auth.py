@@ -3,7 +3,7 @@ from pydantic import EmailStr
 
 from ..database.schemas.token import SToken
 from ..services.auth_service import AuthService
-from ..dependencies import get_authorization_service
+from ..dependencies import get_authorization_service, get_token_service
 from ..database.models.user import User
 from ..dependencies import get_current_user_for_refresh
 
@@ -21,10 +21,12 @@ async def login(
 
 @router.post("/refresh_token/", response_model=SToken)
 async def refresh_jwt_token(
-    user: User = Depends(get_current_user_for_refresh),
+    refresh_token: str = Form(),
     auth_service: AuthService = Depends(get_authorization_service),
+    token_service=Depends(get_token_service),
 ) -> SToken:
-    return await auth_service.refresh_jwt_token(user)
+    user: User = await get_current_user_for_refresh(refresh_token, token_service)
+    return await auth_service.refresh_jwt_token(refresh_token, user)
 
 
 @router.post("/register", response_model=SToken)

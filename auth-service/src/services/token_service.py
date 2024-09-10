@@ -57,8 +57,7 @@ class TokenService:
         return user
 
     @staticmethod
-    def get_current_token_payload(credentials) -> dict:
-        token = credentials.credentials
+    def get_current_token_payload(token: str) -> dict:
         try:
             payload: dict = decode_jwt(token=token)
         except InvalidTokenError as e:

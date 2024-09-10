@@ -10,3 +10,4 @@ pydantic[email]
 bcrypt
 python-multipart
 cryptography
+redis

@@ -10,11 +10,12 @@ build:
 	$(DOCKER_COMPOSE) build
 logs:
 	$(DOCKER_COMPOSE) logs -f
+
 # Migration commands
 migrate-auth:
-	docker-compose exec auth-service alembic upgrade head
+	docker exec docker-auth-service-1 alembic upgrade head
 migrate-chat:
-	docker-compose exec chat-service alembic upgrade head
+	docker exec docker-chat-service-1 alembic upgrade head
 
 # Commands for test
 test:

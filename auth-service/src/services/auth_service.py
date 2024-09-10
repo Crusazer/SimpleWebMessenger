@@ -1,16 +1,22 @@
+import datetime
+
+from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..exceptions import (
     UserNotFoundException,
     UserAuthenticationException,
     NotMatchPasswordException,
+    InvalidTokenException,
 )
 from ..database.models.user import User
 from ..database.repositories.user_repository import UserRepository
 from ..database.schemas.token import SToken
 from ..database.schemas.user_schemas import SUserCreate
-from .token_service import TokenService
 from ..utils.auth import validate_password, hash_password
+from ..config import settings
+from .token_service import TokenService
+from .redis_service import RedisService
 
 
 class AuthService:
@@ -49,6 +55,23 @@ class AuthService:
         user = await self._repository.create_user(s_user)
         return self._generate_tokens(user)
 
-    async def refresh_jwt_token(self, user: User) -> SToken:
+    async def refresh_jwt_token(self, refresh_token: str, user: User) -> SToken:
         """Generate new pair and add old refresh to blacklist"""
+        redis = RedisService()
+
+        # Check current refresh token
+        if await redis.is_token_blacklisted(refresh_token):
+            raise InvalidTokenException
+
+        # Add current refresh token to blacklist
+        payload = self._token_service.get_current_token_payload(refresh_token)
+        exp: int = payload.get("exp")
+        if exp:
+            expiration_time = exp - int(
+                datetime.datetime.now(datetime.timezone.utc).timestamp()
+            )
+        else:
+            expiration_time = settings.JWT.REFRESH_TOKEN_LIFE
+        await redis.set_token(refresh_token, "blacklist", expiration_time)
+        # Return new pair tokens
         return self._generate_tokens(user)

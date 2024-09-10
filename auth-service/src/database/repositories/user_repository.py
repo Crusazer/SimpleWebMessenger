@@ -1,4 +1,3 @@
-from uuid import UUID
 from sqlalchemy import select, Select, Result, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 

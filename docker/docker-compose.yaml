@@ -1,25 +1,39 @@
 services:
   auth-db:
     image: postgres:latest
+    container_name: auth-service
     environment:
       POSTGRES_DB: auth_db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     volumes:
-      - auth-db-data:/var/lib/postgresql/data
+      - ../volumes/auth-db-data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
 
   chat-db:
     image: postgres:latest
+    container_name: chat-service
     environment:
       POSTGRES_DB: chat_db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     volumes:
-      - chat-db-data:/var/lib/postgresql/data
+      - ../volumes/chat-db-data:/var/lib/postgresql/data
     ports:
       - "5433:5432"
+
+  redis:
+    image: redis:latest
+    container_name: redis_db
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: redis
+    volumes:
+      - ../volumes/redis_data:/var/lib/redis/data\
+    ports:
+      - "6379:6379"
 
   auth-service:
     build:

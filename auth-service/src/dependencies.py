@@ -22,22 +22,25 @@ def get_token_service(
     return TokenService(session)
 
 
-def _get_user_from_token_factory(token_type: TokenType):
-    async def get_auth_user_from_token(
-        credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer()),
-        token_service: TokenService = Depends(get_token_service),
-    ) -> User:
-        """Get current user from jwt token."""
-        payload: dict = token_service.get_current_token_payload(credentials)
-        token_service.check_token_type(payload, token_type)
-        user: User = await token_service.get_user_from_jwt(payload=payload)
-        return user
-
-    return get_auth_user_from_token
+async def get_current_auth_user(
+    credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer()),
+    token_service: TokenService = Depends(get_token_service),
+) -> User:
+    """Get current user from jwt token and check token type."""
+    payload: dict = token_service.get_current_token_payload(credentials.credentials)
+    token_service.check_token_type(payload, TokenType.ACCESS)
+    user: User = await token_service.get_user_from_jwt(payload=payload)
+    return user
 
 
-get_current_auth_user = _get_user_from_token_factory(TokenType.ACCESS)
-get_current_user_for_refresh = _get_user_from_token_factory(TokenType.REFRESH)
+async def get_current_user_for_refresh(
+    refresh_token: str, token_service: TokenService = Depends(get_token_service)
+) -> User:
+    """Get current user from jwt refresh token and check token type."""
+    payload: dict = token_service.get_current_token_payload(refresh_token)
+    token_service.check_token_type(payload, TokenType.REFRESH)
+    user: User = await token_service.get_user_from_jwt(payload=payload)
+    return user
 
 
 def get_current_active_user(user: User = Depends(get_current_auth_user)) -> User:
