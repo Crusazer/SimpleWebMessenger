@@ -1,4 +1,5 @@
 import enum
+import uuid
 
 from jwt import InvalidTokenError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -40,9 +41,7 @@ class TokenService:
         )
 
     def create_refresh_token(self, user: User) -> str:
-        jwt_payload = {
-            "sub": str(user.id),
-        }
+        jwt_payload = {"sub": str(user.id), "jti": str(uuid.uuid4())}
         return self._create_jwt_token(
             jwt_payload, TokenType.REFRESH, settings.JWT.REFRESH_TOKEN_LIFE
         )

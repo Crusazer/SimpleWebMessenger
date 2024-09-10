@@ -1,5 +1,5 @@
 from redis import asyncio
-from datetime import datetime, timedelta
+import datetime
 
 from ..config import settings
 from ..exceptions import RedisException
@@ -16,29 +16,31 @@ class RedisService:
 
     async def set_token(
         self,
-        token: str,
-        value: str | bytes | float | int,
-        expires: timedelta | int | None = None,
+        token_jti: str,
+        value: str | bytes | float | int = datetime.datetime.now(
+            datetime.timezone.utc
+        ).timestamp(),
+        expires: datetime.timedelta | int | None = None,
     ) -> None:
         try:
             await self.__redis_connection.set(
-                f"{self.token_prefix}{token}", value, ex=expires
+                f"{self.token_prefix}{token_jti}", value, ex=expires
             )
         except asyncio.RedisError as e:
             raise RedisException(e)  # TODO: use logger
 
-    async def get_token(self, token: str) -> None:
+    async def get_token(self, token_jti: str) -> None:
         try:
-            return await self.__redis_connection.get(f"{self.token_prefix}{token}")
+            return await self.__redis_connection.get(f"{self.token_prefix}{token_jti}")
         except asyncio.RedisError:
-            print(f"Failed to get token: {token}")
+            print(f"Failed to get token: {token_jti}")
             raise RedisException
 
-    async def is_token_blacklisted(self, token: str) -> bool:
+    async def is_token_blacklisted(self, token_jti: str) -> bool:
         try:
             return bool(
-                await self.__redis_connection.get(f"{self.token_prefix}{token}")
-            )
+                await self.__redis_connection.get(f"{self.token_prefix}{token_jti}")
+            )  # TODO: check how this work
         except asyncio.RedisError:
-            print(f"Failed to check token: {token}")
+            print(f"Failed to check token: {token_jti}")
             raise RedisException

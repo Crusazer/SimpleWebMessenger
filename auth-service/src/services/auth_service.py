@@ -58,13 +58,14 @@ class AuthService:
     async def refresh_jwt_token(self, refresh_token: str, user: User) -> SToken:
         """Generate new pair and add old refresh to blacklist"""
         redis = RedisService()
+        payload = self._token_service.get_current_token_payload(refresh_token)
+        jti = payload.get("jti")
 
-        # Check current refresh token
-        if await redis.is_token_blacklisted(refresh_token):
+        # Check current refresh token in blocked list
+        if await redis.is_token_blacklisted(jti):
             raise InvalidTokenException
 
         # Add current refresh token to blacklist
-        payload = self._token_service.get_current_token_payload(refresh_token)
         exp: int = payload.get("exp")
         if exp:
             expiration_time = exp - int(
@@ -72,6 +73,7 @@ class AuthService:
             )
         else:
             expiration_time = settings.JWT.REFRESH_TOKEN_LIFE
-        await redis.set_token(refresh_token, "blacklist", expiration_time)
+        await redis.set_token(jti, "blacklist", expiration_time)
+
         # Return new pair tokens
         return self._generate_tokens(user)
