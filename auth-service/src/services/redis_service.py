@@ -1,9 +1,12 @@
 import datetime
+import logging
 
 from redis import asyncio
 
 from ..config import settings
 from ..exceptions import RedisException
+
+logger = logging.getLogger(__name__)
 
 
 class RedisService:
@@ -28,20 +31,21 @@ class RedisService:
                 f"{self.token_prefix}{token_jti}", value, ex=expires
             )
         except asyncio.RedisError as e:
-            raise RedisException(e)  # TODO: use logger
+            logger.critical("Redis connection error", exc_info=True)
+            raise RedisException(e)
 
     async def get_token(self, token_jti: str) -> None:
         try:
             return await self.__redis_connection.get(f"{self.token_prefix}{token_jti}")
         except asyncio.RedisError:
-            print(f"Failed to get token: {token_jti}")
+            logger.critical("Redis connection error", exc_info=True)
             raise RedisException
 
     async def is_token_blacklisted(self, token_jti: str) -> bool:
         try:
             return bool(
                 await self.__redis_connection.get(f"{self.token_prefix}{token_jti}")
-            )  # TODO: check how this work
+            )
         except asyncio.RedisError:
-            print(f"Failed to check token: {token_jti}")
+            logger.critical("Redis connection error", exc_info=True)
             raise RedisException
