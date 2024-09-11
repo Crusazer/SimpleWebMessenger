@@ -39,6 +39,7 @@ class JWTConfig(BaseSettings):
 
 
 class Config(BaseSettings):
+    DEBUG: bool = True
     SITE_DOMAIN: str = "127.0.0.1"
     DB: ConfigDB = ConfigDB()
     JWT: JWTConfig = JWTConfig()

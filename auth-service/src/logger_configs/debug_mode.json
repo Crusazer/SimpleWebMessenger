@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "disable_existing_loggers": false,
+  "filters": {},
+  "formatters": {
+    "basic": {
+      "format": "%(levelname)s|%(module)s|L%(lineno)d %(asctime)s: %(message)s",
+      "datefmt": "%Y-%m-%cdT%H:%M:%S%z"
+    },
+    "colored": {
+      "()": "src.logger_configs.logging_config.ColoredFormatter",
+      "format": "%(levelname)s|%(module)s|L%(lineno)d %(asctime)s: %(message)s",
+      "datefmt": "%Y-%m-%cdT%H:%M:%S%z"
+    }
+  },
+  "handlers": {
+    "console": {
+      "class": "logging.StreamHandler",
+      "level": "DEBUG",
+      "formatter": "colored",
+      "stream": "ext://sys.stdout"
+    },
+    "file": {
+      "class": "logging.handlers.RotatingFileHandler",
+      "level": "WARNING",
+      "formatter": "basic",
+      "filename": "logs/auth_service_debug.log",
+      "maxBytes": 10000,
+      "backupCount": 3
+    }
+  },
+  "loggers": {
+    "root": {
+      "level": "DEBUG",
+      "handlers": [
+        "console",
+        "file"
+      ]
+    }
+  }
+}

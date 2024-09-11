@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, Depends, Form
 from pydantic import EmailStr
 
@@ -12,6 +14,7 @@ from ..dependencies import get_current_user_for_refresh
 from ..services.auth_service import AuthService
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+logger = logging.getLogger(__name__)
 
 
 @router.post("/login/", response_model=SToken)
