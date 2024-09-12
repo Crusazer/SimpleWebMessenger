@@ -1,0 +1,8 @@
+.env
+.env_example
+__init__.py
+poetry.lock
+poetry.toml
+
+**/__pycache__
+*.pyc
