@@ -1,7 +1,9 @@
 import logging
+from typing import Annotated
 
-from fastapi import APIRouter, Depends, Form
+from fastapi import APIRouter, Depends, Body
 from pydantic import EmailStr
+from starlette.responses import JSONResponse
 
 from src.database.models.user import User
 from src.database.schemas.token import SToken
@@ -19,38 +21,38 @@ logger = logging.getLogger(__name__)
 
 @router.post("/login/", response_model=SToken)
 async def login_user(
-    email: str,
-    password: str,
-    auth_service: AuthService = Depends(get_authorization_service),
+        email: Annotated[EmailStr, Body()],
+        password: Annotated[str, Body()],
+        auth_service: AuthService = Depends(get_authorization_service),
 ):
     return await auth_service.login(email, password)
 
 
-@router.post("logout")
+@router.post("/logout/")
 async def logout(
-    refresh_token: str,
-    user: User = Depends(get_current_active_user),
-    auth_service: AuthService = Depends(get_authorization_service),
+        refresh_token: Annotated[str, Body()],
+        user: User = Depends(get_current_active_user),
+        auth_service: AuthService = Depends(get_authorization_service),
 ):
     await auth_service.logout(refresh_token)
-    return {"message": "Successfully logged out"}
+    return JSONResponse({"message": "Successfully logged out"})
 
 
 @router.post("/refresh_token/", response_model=SToken)
 async def refresh_jwt_token(
-    refresh_token: str,
-    auth_service: AuthService = Depends(get_authorization_service),
-    token_service=Depends(get_token_service),
+        refresh_token: Annotated[str, Body()],
+        auth_service: AuthService = Depends(get_authorization_service),
+        token_service=Depends(get_token_service),
 ) -> SToken:
     user: User = await get_current_user_for_refresh(refresh_token, token_service)
     return await auth_service.refresh_jwt_token(refresh_token, user)
 
 
-@router.post("/register/", response_model=SToken)
+@router.post("/register/", response_model=SToken, status_code=201)
 async def create_user(
-    email: EmailStr,
-    password: str,
-    re_password: str,
-    auth_service: AuthService = Depends(get_authorization_service),
+        email: Annotated[EmailStr, Body()],
+        password: Annotated[str, Body()],
+        re_password: Annotated[str, Body()],
+        auth_service: AuthService = Depends(get_authorization_service),
 ) -> SToken:
     return await auth_service.register_user(email, password, re_password)

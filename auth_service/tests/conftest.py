@@ -21,9 +21,7 @@ DB_URL = f"postgresql://{DB.USERNAME_TEST}:{DB.PASSWORD_TEST}@{DB.HOST_TEST}:{DB
 DB_URL_TEST = f"postgresql+asyncpg://{DB.USERNAME_TEST}:{DB.PASSWORD_TEST}@{DB.HOST_TEST}:{DB.PORT_TEST}/{DB.NAME_TEST}"
 
 engine_test = create_async_engine(DB_URL_TEST, poolclass=NullPool)
-async_session_maker = sessionmaker(
-    engine_test, class_=AsyncSession, expire_on_commit=False
-)
+async_session_maker = sessionmaker(engine_test, class_=AsyncSession, expire_on_commit=False)
 Base.metadata.bind = engine_test
 client = TestClient(app)
 
