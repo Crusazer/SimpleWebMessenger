@@ -3,8 +3,8 @@ import logging
 
 from redis import asyncio
 
-from ..config import settings
-from ..exceptions import RedisException
+from src.config import settings
+from src.exceptions import RedisException
 
 logger = logging.getLogger(__name__)
 

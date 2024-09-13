@@ -3,22 +3,22 @@ import logging
 from fastapi import APIRouter, Depends, Form
 from pydantic import EmailStr
 
-from ..database.models.user import User
-from ..database.schemas.token import SToken
-from ..dependencies import (
+from src.database.models.user import User
+from src.database.schemas.token import SToken
+from src.dependencies import (
     get_authorization_service,
     get_token_service,
     get_current_active_user,
 )
-from ..dependencies import get_current_user_for_refresh
-from ..services.auth_service import AuthService
+from src.dependencies import get_current_user_for_refresh
+from src.services.auth_service import AuthService
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 logger = logging.getLogger(__name__)
 
 
 @router.post("/login/", response_model=SToken)
-async def login(
+async def login_user(
     email: str = Form(),
     password: str = Form(),
     auth_service: AuthService = Depends(get_authorization_service),
@@ -46,7 +46,7 @@ async def refresh_jwt_token(
     return await auth_service.refresh_jwt_token(refresh_token, user)
 
 
-@router.post("/register", response_model=SToken)
+@router.post("/register/", response_model=SToken)
 async def create_user(
     email: EmailStr = Form(),
     password: str = Form(),

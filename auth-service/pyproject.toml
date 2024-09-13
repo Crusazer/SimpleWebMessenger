@@ -20,7 +20,12 @@ bcrypt = "^4.2.0"
 python-multipart = "^0.0.9"
 cryptography = "^43.0.1"
 redis = "^5.0.8"
+pytest = "^8.3.3"
+pytest-async = "^0.1.1"
 
+[tool.pytest.ini_options]  
+asyncio_default_fixture_loop_scope="session"
+asyncio_mode = "auto"
 
 [build-system]
 requires = ["poetry-core"]

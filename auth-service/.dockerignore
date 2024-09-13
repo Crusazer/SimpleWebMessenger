@@ -1,5 +1,6 @@
 .env
 .env_example
+.venv
 __init__.py
 poetry.lock
 poetry.toml

@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
 
-from ..database.models.user import User
-from ..database.schemas.user_schemas import SUserMe
-from ..dependencies import get_current_active_user
+from src.database.models.user import User
+from src.database.schemas.user_schemas import SUserMe
+from src.dependencies import get_current_active_user
 
 router = APIRouter(prefix="/users", tags=["users"])
 

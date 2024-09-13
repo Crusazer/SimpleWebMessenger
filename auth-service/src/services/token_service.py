@@ -4,10 +4,10 @@ import uuid
 from jwt import InvalidTokenError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..config import settings
-from ..database.models.user import User
-from ..database.repositories.user_repository import UserRepository
-from ..exceptions import (
+from src.config import settings
+from src.database.models.user import User
+from src.database.repositories.user_repository import UserRepository
+from src.exceptions import (
     UserNotFoundException,
     InvalidTokenException,
     InvalidTokenTypeException,

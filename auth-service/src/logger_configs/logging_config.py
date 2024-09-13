@@ -6,7 +6,7 @@ import logging.handlers
 import pathlib
 from typing import override
 
-from ..config import settings
+from src.config import settings
 
 
 def setup_logging():

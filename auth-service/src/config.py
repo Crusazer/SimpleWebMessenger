@@ -1,6 +1,6 @@
 from dotenv import load_dotenv
 from pydantic import PostgresDsn
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 load_dotenv()
 
@@ -9,12 +9,17 @@ class ConfigDB(BaseSettings):
     URL: PostgresDsn
     HOST: str
     PORT: str
-    USER: str
+    USERNAME: str
     NAME: str
     PASSWORD: str
 
-    class Config:
-        env_prefix = "DB_"
+    HOST_TEST: str
+    PORT_TEST: str
+    USERNAME_TEST: str
+    NAME_TEST: str
+    PASSWORD_TEST: str
+
+    model_config = SettingsConfigDict(env_prefix="DB_")
 
 
 class RedisConfig(BaseSettings):
@@ -23,8 +28,7 @@ class RedisConfig(BaseSettings):
     PASSWORD: str | None = None
     DEFAULT_DB: int = 0
 
-    class Config:
-        env_prefix = "REDIS_"
+    model_config = SettingsConfigDict(env_prefix="REDIS_")
 
 
 class JWTConfig(BaseSettings):
@@ -34,8 +38,7 @@ class JWTConfig(BaseSettings):
     PRIVATE_KEY: str
     PUBLIC_KEY: str
 
-    class Config:
-        env_prefix = "JWT_"
+    model_config = SettingsConfigDict(env_prefix="JWT_")
 
 
 class Config(BaseSettings):

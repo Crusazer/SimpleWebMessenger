@@ -2,20 +2,20 @@ import datetime
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .redis_service import RedisService
-from .token_service import TokenService
-from ..config import settings
-from ..database.models.user import User
-from ..database.repositories.user_repository import UserRepository
-from ..database.schemas.token import SToken
-from ..database.schemas.user_schemas import SUserCreate
-from ..exceptions import (
+from src.config import settings
+from src.database.models.user import User
+from src.database.repositories.user_repository import UserRepository
+from src.database.schemas.token import SToken
+from src.database.schemas.user_schemas import SUserCreate
+from src.exceptions import (
     UserNotFoundException,
     UserAuthenticationException,
     NotMatchPasswordException,
     InvalidTokenException,
 )
-from ..utils.auth import validate_password, hash_password
+from src.utils.auth import validate_password, hash_password
+from .redis_service import RedisService
+from .token_service import TokenService
 
 
 class AuthService:
