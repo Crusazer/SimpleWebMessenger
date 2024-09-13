@@ -13,8 +13,10 @@ async def test_register_user_async(ac: AsyncClient):
         "password": "a",
         "re_password": "a",
     }
-    response = await ac.post("/auth/register/", data=data)
+    response = await ac.post("/auth/register/", json=data, )
     data = response.json()
+    logger.info(data)
+    print(data)
     assert response.status_code == 200
     assert data.get("access_token") is not None
     assert data.get("refresh_token") is not None

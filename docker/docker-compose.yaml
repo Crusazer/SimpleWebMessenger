@@ -1,25 +1,25 @@
 services:
-  auth-db:
+  auth_db:
     image: postgres:latest
-    container_name: auth-service
+    container_name: db_auth_service
     environment:
       POSTGRES_DB: auth_db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     volumes:
-      - ../volumes/auth-db-data:/var/lib/postgresql/data
+      - ../volumes/auth_db_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
 
-  chat-db:
+  chat_db:
     image: postgres:latest
-    container_name: chat-service
+    container_name: db_chat_service
     environment:
       POSTGRES_DB: chat_db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     volumes:
-      - ../volumes/chat-db-data:/var/lib/postgresql/data
+      - ../volumes/chat_db_data:/var/lib/postgresql/data
     ports:
       - "5433:5432"
 
@@ -35,16 +35,17 @@ services:
     ports:
       - "6379:6379"
 
-  auth-service:
+  auth_service:
     build:
-      context: ../auth-service
+      context: ../auth_service
+    container_name: auth_service
     volumes:
-      - ../auth-service:/app
+      - ../auth_service:/app
     depends_on:
-      - auth-db
+      - auth_db
     ports:
       - "8000:8000"
 
 volumes:
-  auth-db-data:
-  chat-db-data:
+  auth_db_data:
+  chat_db_data:

@@ -13,9 +13,9 @@ logs:
 
 # Migration commands
 migrate-auth:
-	docker exec docker-auth-service-1 alembic upgrade head
+	docker exec auth_service alembic upgrade head
 migrate-chat:
-	docker exec docker-chat-service-1 alembic upgrade head
+	docker exec chat_service alembic upgrade head
 
 # Commands for test
 test:

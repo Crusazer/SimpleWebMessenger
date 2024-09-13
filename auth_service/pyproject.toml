@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "auth-service"
+name = "auth_service"
 version = "0.1.0"
 description = "Microservice for authentication users."
 authors = ["Crusazer <crusazer@gmail.com>"]

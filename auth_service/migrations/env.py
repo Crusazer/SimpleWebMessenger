@@ -12,12 +12,7 @@ from src.database.models.base import Base
 config = context.config
 
 section = config.config_ini_section
-config.set_section_option(section, "DB_URL", str(settings.DB.URL) + "?async_fallback=True")
-config.set_section_option(section, "DB_HOST", settings.DB.HOST)
-config.set_section_option(section, "DB_PORT", settings.DB.PORT)
-config.set_section_option(section, "DB_USER", settings.DB.USER)
-config.set_section_option(section, "DB_NAME", settings.DB.NAME)
-config.set_section_option(section, "DB_PASSWORD", settings.DB.PASSWORD)
+config.set_section_option(section, "DB_URL", f"{settings.DB.url}?async_fallback=True")
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.

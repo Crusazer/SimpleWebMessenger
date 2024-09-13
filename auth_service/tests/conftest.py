@@ -17,9 +17,7 @@ from src.main import app
 logger = logging.getLogger(__name__)
 
 DB = settings.DB
-DB_URL = (
-    f"postgresql://{DB.USERNAME_TEST}:{DB.PASSWORD_TEST}@{DB.HOST_TEST}:{DB.PORT_TEST}"
-)
+DB_URL = f"postgresql://{DB.USERNAME_TEST}:{DB.PASSWORD_TEST}@{DB.HOST_TEST}:{DB.PORT_TEST}"
 DB_URL_TEST = f"postgresql+asyncpg://{DB.USERNAME_TEST}:{DB.PASSWORD_TEST}@{DB.HOST_TEST}:{DB.PORT_TEST}/{DB.NAME_TEST}"
 
 engine_test = create_async_engine(DB_URL_TEST, poolclass=NullPool)

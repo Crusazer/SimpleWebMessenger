@@ -19,8 +19,8 @@ logger = logging.getLogger(__name__)
 
 @router.post("/login/", response_model=SToken)
 async def login_user(
-    email: str = Form(),
-    password: str = Form(),
+    email: str,
+    password: str,
     auth_service: AuthService = Depends(get_authorization_service),
 ):
     return await auth_service.login(email, password)
@@ -28,7 +28,7 @@ async def login_user(
 
 @router.post("logout")
 async def logout(
-    refresh_token: str = Form(),
+    refresh_token: str,
     user: User = Depends(get_current_active_user),
     auth_service: AuthService = Depends(get_authorization_service),
 ):
@@ -38,7 +38,7 @@ async def logout(
 
 @router.post("/refresh_token/", response_model=SToken)
 async def refresh_jwt_token(
-    refresh_token: str = Form(),
+    refresh_token: str,
     auth_service: AuthService = Depends(get_authorization_service),
     token_service=Depends(get_token_service),
 ) -> SToken:
@@ -48,9 +48,9 @@ async def refresh_jwt_token(
 
 @router.post("/register/", response_model=SToken)
 async def create_user(
-    email: EmailStr = Form(),
-    password: str = Form(),
-    re_password: str = Form(),
+    email: EmailStr,
+    password: str,
+    re_password: str,
     auth_service: AuthService = Depends(get_authorization_service),
 ) -> SToken:
     return await auth_service.register_user(email, password, re_password)
