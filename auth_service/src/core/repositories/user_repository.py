@@ -1,8 +1,8 @@
 from sqlalchemy import select, Select, Result, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.database.models.user import User
-from src.database.schemas.user_schemas import SUserCreate
+from src.core.database.models.user import User
+from src.core.schemas.user_schemas import SUserCreate
 
 
 class UserRepository:

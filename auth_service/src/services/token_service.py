@@ -5,8 +5,8 @@ from jwt import InvalidTokenError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config import settings
-from src.database.models.user import User
-from src.database.repositories.user_repository import UserRepository
+from src.core.database.models.user import User
+from src.core.repositories.user_repository import UserRepository
 from src.exceptions import (
     UserNotFoundException,
     InvalidTokenException,

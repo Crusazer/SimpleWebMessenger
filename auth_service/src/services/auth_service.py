@@ -3,10 +3,10 @@ import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config import settings
-from src.database.models.user import User
-from src.database.repositories.user_repository import UserRepository
-from src.database.schemas.token import SToken
-from src.database.schemas.user_schemas import SUserCreate
+from src.core.database.models.user import User
+from src.core.repositories.user_repository import UserRepository
+from src.core.schemas.token import SToken
+from src.core.schemas.user_schemas import SUserCreate
 from src.exceptions import (
     UserNotFoundException,
     UserAuthenticationException,

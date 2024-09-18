@@ -5,8 +5,8 @@ from fastapi import APIRouter, Depends, Body
 from pydantic import EmailStr
 from starlette.responses import JSONResponse
 
-from src.database.models.user import User
-from src.database.schemas.token import SToken
+from src.core.database.models.user import User
+from src.core.schemas.token import SToken
 from src.dependencies import (
     get_authorization_service,
     get_token_service,

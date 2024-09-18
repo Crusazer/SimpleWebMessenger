@@ -1,14 +1,16 @@
+import logging
+
 from fastapi import Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .database.database import get_async_session
-from .database.models.user import User
+from src.core.database.database import get_async_session
+from src.core.database.models.user import User
 from .exceptions import UserNotActiveException
 from .services.auth_service import AuthService
 from .services.token_service import TokenService, TokenType
 
-
+logger = logging.getLogger(__name__)
 def get_authorization_service(
     session: AsyncSession = Depends(get_async_session),
 ) -> AuthService:

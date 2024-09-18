@@ -3,7 +3,7 @@ from datetime import datetime, timezone, timedelta
 import bcrypt
 import jwt
 
-from ..config import settings
+from src.config import settings
 
 
 def encode_jwt(

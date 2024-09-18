@@ -10,8 +10,8 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import NullPool
 
 from src.config import settings
-from src.database.database import get_async_session
-from src.database.models.base import Base
+from src.core.database.database import get_async_session
+from src.core.database.models.base import Base
 from src.main import app
 
 logger = logging.getLogger(__name__)
