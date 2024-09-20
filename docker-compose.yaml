@@ -37,10 +37,11 @@ services:
 
   auth_service:
     build:
-      context: ../auth_service
+      context: auth_service
     container_name: auth_service
+    command: /app/auth_start.sh
     volumes:
-      - ../auth_service:/app
+      - ./auth_service:/app
     depends_on:
       - auth_db
     ports:

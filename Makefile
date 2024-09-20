@@ -1,5 +1,5 @@
 # Variables
-DOCKER_COMPOSE = docker compose -f docker/docker-compose.yaml
+DOCKER_COMPOSE = docker compose -f docker-compose.yaml
 
 # Commands
 up:
