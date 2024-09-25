@@ -11,12 +11,15 @@ logger = logging.getLogger(__name__)
 
 class RedisService:
     token_prefix = "refresh_"
-    __redis_connection: asyncio.Redis = asyncio.Redis(
-        host=settings.REDIS.HOST,
-        port=settings.REDIS.PORT,
-        password=settings.REDIS.PASSWORD,
-        db=settings.REDIS.DEFAULT_DB,
-    )
+
+    def __init__(self):
+        self.__redis_connection: asyncio.Redis = asyncio.Redis(
+            host=settings.REDIS.HOST,
+            port=settings.REDIS.PORT,
+            password=settings.REDIS.PASSWORD,
+            db=settings.REDIS.DEFAULT_DB,
+            max_connections=10
+        )
 
     async def set_token(
         self,

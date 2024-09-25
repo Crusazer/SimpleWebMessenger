@@ -31,7 +31,7 @@ async def create_database():
     try:
         await conn.execute(f"CREATE DATABASE test")
     except asyncpg.DuplicateDatabaseError:
-        logger.info("Database already exists")
+        logger.warning("Database already exists")
     finally:
         await conn.close()
 

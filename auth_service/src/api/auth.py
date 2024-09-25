@@ -38,7 +38,7 @@ async def logout(
     return JSONResponse({"message": "Successfully logged out"})
 
 
-@router.post("/refresh_token/", response_model=SToken)
+@router.post("/refresh/", response_model=SToken)
 async def refresh_jwt_token(
         refresh_token: Annotated[str, Body()],
         auth_service: AuthService = Depends(get_authorization_service),
