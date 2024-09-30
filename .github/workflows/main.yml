@@ -1,8 +1,8 @@
 on:
   push:
-    branches: [ "setup_github_actions" ]
+    branches: [ "master" ]
   pull_request:
-    branches: [ "setup_github_actions" ]
+    branches: [ "master" ]
 
 jobs:
 
