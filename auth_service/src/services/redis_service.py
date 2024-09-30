@@ -20,6 +20,7 @@ class RedisService:
             db=settings.REDIS.DEFAULT_DB,
             max_connections=10
         )
+        logger.info(f"Redis service initialized {settings.REDIS}")
 
     async def set_token(
         self,

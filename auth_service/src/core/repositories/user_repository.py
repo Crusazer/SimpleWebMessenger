@@ -18,7 +18,7 @@ class UserRepository:
         return result.scalars().first()
 
     async def create_user(self, new_user: SUserCreate) -> User:
-        user = User(**new_user.model_dump())
+        user: User = User(**new_user.model_dump())
         self._session.add(user)
         await self._session.commit()
         return user
