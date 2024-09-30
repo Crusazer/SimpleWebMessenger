@@ -40,9 +40,11 @@ jobs:
     - name: Run docker containers
       run: docker compose up -d
 
-    # Step 6: Run tests
+    # Step 6: Run auth_service test
     - name: Run authservice tests
-      run: docker exec -T &(docker compose ps -q auth_service) pytest --disable-warnings
+      run: |
+        cd auth_service
+        pytest 
 
     # Step 7: Tear down services
     - name: Tear down Docker containers
