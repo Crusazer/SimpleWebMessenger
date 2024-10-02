@@ -13,7 +13,7 @@ from sqlalchemy import (
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.database.models import Device
-from src.core.schemas.device import DeviceDTO, SDeviceCreate
+from src.core.schemas.device import DeviceDTO, SDeviceCreate, SDeviceGet
 
 
 class DeviceRepository:
@@ -62,3 +62,9 @@ class DeviceRepository:
         if result.rowcount == 0:
             raise ValueError(f"User {user_id} have not device with jti {current_jti}.")
         await self._session.commit()
+
+    async def get_user_devices(self, user_id: UUID) -> list[SDeviceGet]:
+        """ Return list of user devices """
+        stmt: Select = select(Device).where(Device.user_id == user_id)
+        result: Result = await self._session.execute(stmt)
+        return [SDeviceGet.model_validate(device, from_attributes=True) for device in result.scalars().all()]

@@ -130,3 +130,34 @@ class TestAuthService:
             response: Response = await ac.post("/auth/refresh/",
                                                json=f"{data.get("refresh_token")}")
             assert response.status_code == status.HTTP_200_OK
+
+    @pytest.mark.parametrize(
+        "access_token, expected_status",
+        [
+            ("valid_access_token", status.HTTP_200_OK),
+            ("invalid_access_token", status.HTTP_401_UNAUTHORIZED),
+        ]
+    )
+    async def test_get_all_devices(
+            self,
+            ac: AsyncClient,
+            random_user: tuple[SUserCreate, SToken],
+            access_token, expected_status
+    ) -> None:
+        """ Test get all devices scenarios. """
+        tokens: SToken = random_user[1]
+        if access_token == "valid_access_token":
+            access_token = tokens.access_token
+
+        response: Response = await ac.get("/auth/devices/", headers={"Authorization": f"Bearer {access_token}"})
+        assert response.status_code == expected_status
+
+        if response.status_code == status.HTTP_200_OK:
+            data: list = response.json()
+            assert len(data) == 1
+
+            device: dict = data[0]
+            assert "id" in device
+            assert "ip" in device
+            assert "user_agent" in device
+            assert "location" in device
