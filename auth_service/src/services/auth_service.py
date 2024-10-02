@@ -13,6 +13,7 @@ from src.exceptions import (
     InvalidTokenException,
     InvalidDeviceException,
     UserNotFoundException,
+    DeviceNotExistsException,
 )
 from src.utils.auth import validate_password, hash_password
 from src.utils.location import get_location_by_ip
@@ -30,11 +31,11 @@ class AuthService:
         self._token_service = TokenService(self._session)
 
     async def _register_new_device(
-            self,
-            user_id: uuid.UUID,
-            user_agent: str,
-            jti: uuid.UUID,
-            ip: str,
+        self,
+        user_id: uuid.UUID,
+        user_agent: str,
+        jti: uuid.UUID,
+        ip: str,
     ) -> DeviceDTO:
         location: str = await get_location_by_ip(ip)
         if location is None:
@@ -53,7 +54,7 @@ class AuthService:
         return SToken(access_token=access_token, refresh_token=refresh_token), jti
 
     async def login(
-            self, email: str, password: str, user_agent: str, ip: str
+        self, email: str, password: str, user_agent: str, ip: str
     ) -> SToken:
         """Check password and authenticate user via create user device"""
         user = await self._repository.get_user_by_field(email=email)
@@ -83,7 +84,7 @@ class AuthService:
             raise InvalidTokenException
 
     async def refresh_jwt_token(
-            self, refresh_token: str, user: User, user_agent: str
+        self, refresh_token: str, user: User, user_agent: str
     ) -> SToken:
         """Generate new pair and add old refresh to blacklist"""
         payload = self._token_service.get_current_token_payload(refresh_token)
@@ -109,7 +110,7 @@ class AuthService:
         return tokens
 
     async def register_user(
-            self, email: str, password: str, re_password: str, ip: str, user_agent: str
+        self, email: str, password: str, re_password: str, ip: str, user_agent: str
     ):
         """Create new user if not exists and passwords match and add new user device"""
         # Check input params
@@ -139,7 +140,23 @@ class AuthService:
         return tokens
 
     async def get_my_devices(self, user: User) -> list[SDeviceGet]:
-        """ Return list of all user's devices '"""
+        """Return list of all user's devices '"""
         device_repository: DeviceRepository = DeviceRepository(self._session)
         devices = await device_repository.get_user_devices(user.id)
         return devices
+
+    async def logout_device(self, device_id: uuid.UUID, user: User) -> None:
+        """Check permission and delete user device"""
+        device_repository: DeviceRepository = DeviceRepository(self._session)
+        try:
+            await device_repository.delete_by_user_id_and_device_id(user.id, device_id)
+        except ValueError:
+            raise DeviceNotExistsException
+
+    async def logout_all_devices(self, user: User) -> None:
+        """Logout from all user devices"""
+        device_repository: DeviceRepository = DeviceRepository(self._session)
+        try:
+            await device_repository.delete_all_user_devices(user.id)
+        except ValueError:
+            raise DeviceNotExistsException

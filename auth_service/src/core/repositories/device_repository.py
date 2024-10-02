@@ -41,15 +41,14 @@ class DeviceRepository:
 
         return DeviceDTO.model_validate(device, from_attributes=True)
 
-    async def delete_by_user_id_and_jti(self, user_id: UUID, jti: UUID) -> None:
-        """Delete user device"""
-        stmt: Delete = delete(Device).where(
-            Device.user_id == user_id, Device.jti == jti
-        )
-        result: CursorResult = await self._session.execute(stmt)
-        if result.rowcount == 0:
-            raise ValueError(f"User {user_id} have not device with jti {jti}.")
-        await self._session.commit()
+    async def get_user_devices(self, user_id: UUID) -> list[SDeviceGet]:
+        """Return list of user devices"""
+        stmt: Select = select(Device).where(Device.user_id == user_id)
+        result: Result = await self._session.execute(stmt)
+        return [
+            SDeviceGet.model_validate(device, from_attributes=True)
+            for device in result.scalars().all()
+        ]
 
     async def update(self, user_id: UUID, current_jti: UUID, **kwargs):
         """Update user device"""
@@ -63,8 +62,32 @@ class DeviceRepository:
             raise ValueError(f"User {user_id} have not device with jti {current_jti}.")
         await self._session.commit()
 
-    async def get_user_devices(self, user_id: UUID) -> list[SDeviceGet]:
-        """ Return list of user devices """
-        stmt: Select = select(Device).where(Device.user_id == user_id)
-        result: Result = await self._session.execute(stmt)
-        return [SDeviceGet.model_validate(device, from_attributes=True) for device in result.scalars().all()]
+    async def delete_by_user_id_and_jti(self, user_id: UUID, jti: UUID) -> None:
+        """Delete user device"""
+        stmt: Delete = delete(Device).where(
+            Device.user_id == user_id, Device.jti == jti
+        )
+        result: CursorResult = await self._session.execute(stmt)
+        if result.rowcount == 0:
+            raise ValueError(f"User {user_id} have not device with jti {jti}.")
+        await self._session.commit()
+
+    async def delete_by_user_id_and_device_id(
+        self, user_id: UUID, device_id: UUID
+    ) -> None:
+        """Delete user device by user id and device id"""
+        stmt: Delete = delete(Device).where(
+            Device.user_id == user_id, Device.id == device_id
+        )
+        result: CursorResult = await self._session.execute(stmt)
+        if result.rowcount == 0:
+            raise ValueError(f"User {user_id} have not device with id {device_id}.")
+        await self._session.commit()
+
+    async def delete_all_user_devices(self, user_id: UUID) -> None:
+        """Delete all user devices"""
+        stmt: Delete = delete(Device).where(Device.user_id == user_id)
+        result: CursorResult = await self._session.execute(stmt)
+        if result.rowcount == 0:
+            raise ValueError(f"User {user_id} have not devices.")
+        await self._session.commit()

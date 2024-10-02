@@ -24,7 +24,7 @@ class TestTokenService:
         # Assert
         mock_create_jwt.assert_called_once_with(
             {"sub": f"{user.id}", TokenType.TYPE: TokenType.ACCESS},
-            expire_minutes=settings.JWT.ACCESS_TOKEN_LIFE  # JWT.ACCESS_TOKEN_LIFE
+            expire_minutes=settings.JWT.ACCESS_TOKEN_LIFE,  # JWT.ACCESS_TOKEN_LIFE
         )
         assert access_token == "mock_access_token"
 
@@ -40,7 +40,11 @@ class TestTokenService:
 
         # Assert
         mock_create_jwt.assert_called_once_with(
-            {"sub": f"{user.id}", "jti": str(jti), TokenType.TYPE.value: TokenType.REFRESH.value},
-            expire_minutes=settings.JWT.REFRESH_TOKEN_LIFE
+            {
+                "sub": f"{user.id}",
+                "jti": str(jti),
+                TokenType.TYPE.value: TokenType.REFRESH.value,
+            },
+            expire_minutes=settings.JWT.REFRESH_TOKEN_LIFE,
         )
         assert refresh_token == "mock_refresh_token"

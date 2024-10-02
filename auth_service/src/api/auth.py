@@ -1,4 +1,5 @@
 import logging
+import uuid
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Body, Request
@@ -24,20 +25,20 @@ logger = logging.getLogger(__name__)
 
 @router.post("/login/", response_model=SToken)
 async def login_user(
-        request: Request,
-        email: Annotated[EmailStr, Body()],
-        password: Annotated[str, Body()],
-        user_agent: Annotated[str, Depends(get_user_agent)],
-        auth_service: Annotated[AuthService, Depends(get_authorization_service)],
+    request: Request,
+    email: Annotated[EmailStr, Body()],
+    password: Annotated[str, Body()],
+    user_agent: Annotated[str, Depends(get_user_agent)],
+    auth_service: Annotated[AuthService, Depends(get_authorization_service)],
 ):
     return await auth_service.login(email, password, user_agent, request.client.host)
 
 
 @router.post("/logout/")
 async def logout(
-        refresh_token: Annotated[str, Body()],
-        user: Annotated[User, Depends(get_current_active_user)],
-        auth_service: Annotated[AuthService, Depends(get_authorization_service)],
+    refresh_token: Annotated[str, Body()],
+    user: Annotated[User, Depends(get_current_active_user)],
+    auth_service: Annotated[AuthService, Depends(get_authorization_service)],
 ):
     await auth_service.logout(refresh_token)
     return JSONResponse({"message": "Successfully logged out"})
@@ -45,10 +46,10 @@ async def logout(
 
 @router.post("/refresh/", response_model=SToken)
 async def refresh_jwt_token(
-        refresh_token: Annotated[str, Body()],
-        user_agent: Annotated[str, Depends(get_user_agent)],
-        auth_service: Annotated[AuthService, Depends(get_authorization_service)],
-        token_service: Annotated[TokenService, Depends(get_token_service)],
+    refresh_token: Annotated[str, Body()],
+    user_agent: Annotated[str, Depends(get_user_agent)],
+    auth_service: Annotated[AuthService, Depends(get_authorization_service)],
+    token_service: Annotated[TokenService, Depends(get_token_service)],
 ) -> SToken:
     user: User = await get_current_user_for_refresh(refresh_token, token_service)
     return await auth_service.refresh_jwt_token(refresh_token, user, user_agent)
@@ -56,12 +57,12 @@ async def refresh_jwt_token(
 
 @router.post("/register/", response_model=SToken, status_code=201)
 async def registration(
-        request: Request,
-        email: Annotated[EmailStr, Body()],
-        password: Annotated[str, Body()],
-        re_password: Annotated[str, Body()],
-        user_agent: Annotated[str, Depends(get_user_agent)],
-        auth_service: Annotated[AuthService, Depends(get_authorization_service)],
+    request: Request,
+    email: Annotated[EmailStr, Body()],
+    password: Annotated[str, Body()],
+    re_password: Annotated[str, Body()],
+    user_agent: Annotated[str, Depends(get_user_agent)],
+    auth_service: Annotated[AuthService, Depends(get_authorization_service)],
 ) -> SToken:
     ip: str = request.client.host
     return await auth_service.register_user(
@@ -71,7 +72,24 @@ async def registration(
 
 @router.get("/devices/", response_model=list[SDeviceGet])
 async def get_my_devices(
-        user: Annotated[User, Depends(get_current_active_user)],
-        auth_service: Annotated[AuthService, Depends(get_authorization_service)]
+    user: Annotated[User, Depends(get_current_active_user)],
+    auth_service: Annotated[AuthService, Depends(get_authorization_service)],
 ) -> list[SDeviceGet]:
     return await auth_service.get_my_devices(user)
+
+
+@router.post("/devices/logout/")
+async def logout_device(
+    device_id: Annotated[uuid.UUID, Body()],
+    user: Annotated[User, Depends(get_current_active_user)],
+    auth_service: Annotated[AuthService, Depends(get_authorization_service)],
+):
+    await auth_service.logout_device(device_id, user)
+
+
+@router.post("/devices/logout-all/")
+async def logout_all_devices(
+    user: Annotated[User, Depends(get_current_active_user)],
+    auth_service: Annotated[AuthService, Depends(get_authorization_service)],
+):
+    await auth_service.logout_all_devices(user)
