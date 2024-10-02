@@ -40,10 +40,14 @@ class TokenService:
             jwt_payload, TokenType.ACCESS, settings.JWT.ACCESS_TOKEN_LIFE
         )
 
-    def create_refresh_token(self, user: User) -> str:
-        jwt_payload = {"sub": str(user.id), "jti": str(uuid.uuid4())}
-        return self._create_jwt_token(
-            jwt_payload, TokenType.REFRESH, settings.JWT.REFRESH_TOKEN_LIFE
+    def create_refresh_token(self, user: User) -> tuple[str, uuid.UUID]:
+        jti: uuid.UUID = uuid.uuid4()
+        jwt_payload = {"sub": str(user.id), "jti": str(jti)}
+        return (
+            self._create_jwt_token(
+                jwt_payload, TokenType.REFRESH, settings.JWT.REFRESH_TOKEN_LIFE
+            ),
+            jti,
         )
 
     async def get_user_from_jwt(self, payload: dict) -> User:

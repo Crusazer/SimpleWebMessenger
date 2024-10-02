@@ -1,21 +1,26 @@
-import datetime
+import logging
+import uuid
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.config import settings
 from src.core.database.models.user import User
 from src.core.repositories.user_repository import UserRepository
 from src.core.schemas.token import SToken
 from src.core.schemas.user_schemas import SUserCreate
 from src.exceptions import (
-    UserNotFoundException,
     UserAuthenticationException,
     NotMatchPasswordException,
     InvalidTokenException,
+    InvalidDeviceException,
+    UserNotFoundException,
 )
 from src.utils.auth import validate_password, hash_password
-from .redis_service import RedisService
+from src.utils.location import get_location_by_ip
 from .token_service import TokenService
+from ..core.repositories.device_repository import DeviceRepository
+from ..core.schemas.device import DeviceDTO, SDeviceCreate
+
+logger = logging.getLogger(__name__)
 
 
 class AuthService:
@@ -24,34 +29,33 @@ class AuthService:
         self._repository = UserRepository(self._session)
         self._token_service = TokenService(self._session)
 
-    def _generate_tokens(self, user: User) -> SToken:
+    async def _register_new_device(
+        self,
+        user_id: uuid.UUID,
+        user_agent: str,
+        jti: uuid.UUID,
+        ip: str,
+    ) -> DeviceDTO:
+        location: str = await get_location_by_ip(ip)
+        if location is None:
+            raise InvalidDeviceException
+
+        device: SDeviceCreate = SDeviceCreate(
+            user_id=user_id, user_agent=user_agent, ip=ip, location=location, jti=jti
+        )
+        device_repository: DeviceRepository = DeviceRepository(self._session)
+        device: DeviceDTO = await device_repository.create(device)
+        return device
+
+    def _generate_tokens(self, user: User) -> tuple[SToken, uuid.UUID]:
         access_token: str = self._token_service.create_access_token(user)
-        refresh_token: str = self._token_service.create_refresh_token(user)
-        return SToken(access_token=access_token, refresh_token=refresh_token)
+        refresh_token, jti = self._token_service.create_refresh_token(user)
+        return SToken(access_token=access_token, refresh_token=refresh_token), jti
 
-    @staticmethod
-    async def _add_token_to_blacklist(
-        payload: dict,
-        redis: RedisService,
-    ) -> None:
-        """Add refresh token to blacklist"""
-        exp: int = payload.get("exp")
-        if exp:
-            now = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
-            expiration_time = exp - now
-        else:
-            expiration_time = settings.JWT.REFRESH_TOKEN_LIFE
-        await redis.set_token(payload.get("jti"), "blacklist", expiration_time)
-
-    @staticmethod
-    async def _check_token_in_blacklist(
-        jti: str, redis_service: RedisService()
-    ) -> None:
-        if await redis_service.is_token_blacklisted(jti):
-            raise InvalidTokenException
-
-    async def login(self, email: str, password: str) -> SToken:
-        """Check password and authenticate user"""
+    async def login(
+        self, email: str, password: str, user_agent: str, ip: str
+    ) -> SToken:
+        """Check password and authenticate user via create user device"""
         user = await self._repository.get_user_by_field(email=email)
         if not user:
             raise UserNotFoundException
@@ -59,30 +63,63 @@ class AuthService:
         if not validate_password(password, user.password):
             raise UserAuthenticationException
 
-        return self._generate_tokens(user)
+        tokens, jti = self._generate_tokens(user)
+        device: DeviceDTO = await self._register_new_device(
+            user_id=user.id, user_agent=user_agent, jti=jti, ip=ip
+        )
+        logger.info("User %s logged in from device: %s", user.email, device.id)
+        return tokens
 
     async def logout(self, refresh_token: str) -> None:
-        """Logout user and add refresh token to blacklist"""
-        redis = RedisService()
+        """Logout user via delete user device"""
         payload = self._token_service.get_current_token_payload(refresh_token)
 
-        await self._check_token_in_blacklist(payload.get("jti"), redis)
-        await self._add_token_to_blacklist(payload, redis)
+        device_repository: DeviceRepository = DeviceRepository(self._session)
+        try:
+            await device_repository.delete_by_user_id_and_jti(
+                user_id=payload["sub"], jti=payload["jti"]
+            )
+        except ValueError:
+            raise InvalidTokenException
 
-    async def refresh_jwt_token(self, refresh_token: str, user: User) -> SToken:
+    async def refresh_jwt_token(
+        self, refresh_token: str, user: User, user_agent: str
+    ) -> SToken:
         """Generate new pair and add old refresh to blacklist"""
-        redis = RedisService()
         payload = self._token_service.get_current_token_payload(refresh_token)
+        device_repository: DeviceRepository = DeviceRepository(self._session)
 
-        await self._check_token_in_blacklist(payload.get("jti"), redis)
-        await self._add_token_to_blacklist(payload, redis)
-        return self._generate_tokens(user)
+        try:
+            device: DeviceDTO = await device_repository.get(user.id, payload.get("jti"))
 
-    async def register_user(self, email: str, password: str, re_password: str):
-        """Create new user if not exists and passwords match"""
+            # If user_agent not match this mean someone else tries to refresh the user JWT.
+            if device.user_agent != user_agent:
+                await device_repository.delete_by_user_id_and_jti(
+                    user_id=user.id, jti=payload["jti"]
+                )
+                raise InvalidDeviceException
+
+            tokens, jti = self._generate_tokens(user)
+            await device_repository.update(
+                user_id=user.id, current_jti=payload["jti"], jti=jti
+            )
+        except ValueError:
+            raise InvalidTokenException
+
+        return tokens
+
+    async def register_user(
+        self, email: str, password: str, re_password: str, ip: str, user_agent: str
+    ):
+        """Create new user if not exists and passwords match and add new user device"""
+        # Check input params
         if password != re_password:
             raise NotMatchPasswordException
 
+        if not user_agent or not ip:
+            raise InvalidDeviceException
+
+        # Create new user
         hashed_password = hash_password(password)
         s_user = SUserCreate(email=email, password=hashed_password)
 
@@ -92,4 +129,11 @@ class AuthService:
             )
 
         user = await self._repository.create_user(s_user)
-        return self._generate_tokens(user)
+        tokens, jti = self._generate_tokens(user)
+
+        # Create new user device
+        device: DeviceDTO = await self._register_new_device(
+            user.id, user_agent, jti, ip
+        )
+        logger.info("Register user %s with device: %s", email, device.user_agent)
+        return tokens

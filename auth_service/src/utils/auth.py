@@ -2,8 +2,10 @@ from datetime import datetime, timezone, timedelta
 
 import bcrypt
 import jwt
+from user_agents.parsers import UserAgent
 
 from src.config import settings
+from user_agents import parse
 
 
 def encode_jwt(
@@ -39,3 +41,10 @@ def validate_password(password: str, hashed_password: str) -> bool:
     return bcrypt.checkpw(
         password=password.encode(), hashed_password=hashed_password.encode()
     )
+
+
+def get_user_agent(headers: dict) -> str:
+    if user_agent := headers.get("x-device-info"):
+        return str(user_agent)
+    user_agent: UserAgent = parse(headers.get("user-agent"))
+    return str(user_agent)

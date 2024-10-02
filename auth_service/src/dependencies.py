@@ -1,6 +1,6 @@
 import logging
 
-from fastapi import Depends
+from fastapi import Depends, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -9,8 +9,11 @@ from src.core.database.models.user import User
 from .exceptions import UserNotActiveException
 from .services.auth_service import AuthService
 from .services.token_service import TokenService, TokenType
+from .utils.auth import get_user_agent as get_user_agent_auth
 
 logger = logging.getLogger(__name__)
+
+
 def get_authorization_service(
     session: AsyncSession = Depends(get_async_session),
 ) -> AuthService:
@@ -48,3 +51,7 @@ def get_current_active_user(user: User = Depends(get_current_auth_user)) -> User
     if not user.is_active:
         raise UserNotActiveException
     return user
+
+
+def get_user_agent(request: Request) -> str:
+    return get_user_agent_auth(dict(request.headers))

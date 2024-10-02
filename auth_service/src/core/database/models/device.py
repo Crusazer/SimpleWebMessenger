@@ -11,9 +11,13 @@ if TYPE_CHECKING:
 
 
 class Device(Base):
-    __tablename__ = 'device'
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("user.id"), index=True)
+    __tablename__ = "device"
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("user.id"), index=True
+    )
     user_agent: Mapped[str] = mapped_column(String(length=255), nullable=False)
     ip: Mapped[str] = mapped_column(String(length=45), nullable=False)
     location: Mapped[str] = mapped_column(String(length=255), nullable=False)

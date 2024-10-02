@@ -59,6 +59,8 @@ class Config(BaseSettings):
     DB: ConfigDB = ConfigDB()
     JWT: JWTConfig = JWTConfig()
     REDIS: RedisConfig = RedisConfig()
+    API_LOCATION_KEY: str
+    USE_USER_GEOLOCATION: bool = False
 
 
 settings = Config()

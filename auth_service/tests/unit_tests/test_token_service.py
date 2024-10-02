@@ -36,11 +36,11 @@ class TestTokenService:
         token_service = TokenService(db_session=AsyncMock())
 
         # Act
-        refresh_token = token_service.create_refresh_token(user)
+        refresh_token, jti = token_service.create_refresh_token(user)
 
         # Assert
         mock_create_jwt.assert_called_once_with(
-            {"sub": f"{user.id}", "jti": mock.ANY, TokenType.TYPE.value: TokenType.REFRESH.value},
+            {"sub": f"{user.id}", "jti": str(jti), TokenType.TYPE.value: TokenType.REFRESH.value},
             expire_minutes=settings.JWT.REFRESH_TOKEN_LIFE
         )
         assert refresh_token == "mock_refresh_token"
