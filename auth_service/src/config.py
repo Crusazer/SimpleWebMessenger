@@ -43,6 +43,13 @@ class RedisConfig(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="REDIS_")
 
 
+class RMQConfig(BaseSettings):
+    HOST: str
+    PORT: int
+
+    model_config = SettingsConfigDict(env_prefix="RMQ_")
+
+
 class JWTConfig(BaseSettings):
     ACCESS_TOKEN_LIFE: int = 3  # In minutes
     REFRESH_TOKEN_LIFE: int = 30 * 24 * 60  # In minutes. Default 30 days.
@@ -54,11 +61,13 @@ class JWTConfig(BaseSettings):
 
 
 class Config(BaseSettings):
+    JWT: JWTConfig = JWTConfig()
+    REDIS: RedisConfig = RedisConfig()
+    RMQ: RMQConfig = RMQConfig()
+
     DEBUG: bool = True
     SITE_DOMAIN: str = "127.0.0.1"
     DB: ConfigDB = ConfigDB()
-    JWT: JWTConfig = JWTConfig()
-    REDIS: RedisConfig = RedisConfig()
     API_LOCATION_KEY: str
     USE_USER_GEOLOCATION: bool = False
 
