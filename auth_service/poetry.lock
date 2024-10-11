@@ -637,6 +637,19 @@ tornado = ["tornado"]
 twisted = ["twisted"]
 
 [[package]]
+name = "pika-stubs"
+version = "0.1.3"
+description = "Mypy plugin and stubs for Pika"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "pika-stubs-0.1.3.tar.gz", hash = "sha256:aaa78fa9f52eb3591b6073fbbe2607567405d1857be268d447bea252e22dd6cf"},
+]
+
+[package.extras]
+dev = ["flake8 (>=3.8.3,<3.9.0)", "mypy (>=0.780,<1.0)"]
+
+[[package]]
 name = "pluggy"
 version = "1.5.0"
 description = "plugin and hook calling mechanisms for python"
@@ -1070,4 +1083,4 @@ standard = ["colorama (>=0.4)", "httptools (>=0.5.0)", "python-dotenv (>=0.13)",
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "eab8b270c0e1b7574c3f57e480515650fcf1df4adcaa834ebe474d54957ae065"
+content-hash = "da0e3b70df8db08695874d6184216cbaa88eb14fb3744b1b9a6c7d8054f63ac2"
