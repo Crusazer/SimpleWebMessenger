@@ -7,7 +7,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     volumes:
-      - ../volumes/auth_db_data:/var/lib/postgresql/data
+      - ./volumes/auth_db_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
 
@@ -19,7 +19,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     volumes:
-      - ../volumes/chat_db_data:/var/lib/postgresql/data
+      - ./volumes/chat_db_data:/var/lib/postgresql/data
     ports:
       - "5433:5432"
 
@@ -31,9 +31,22 @@ services:
       REDIS_PORT: 6379
       REDIS_PASSWORD: redis
     volumes:
-      - ../volumes/redis_data:/var/lib/redis/data\
+      - ./volumes/redis_data:/var/lib/redis/data\
     ports:
       - "6379:6379"
+
+  rabbitmq:
+    image: rabbitmq:management-alpine
+    hostname: rabbitmq
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: "admin"
+      RABBITMQ_DEFAULT_PASS: "admin"
+    volumes:
+      - ./volumes/rabbitmq_data:/var/lib/rabbitmq
 
   auth_service:
     build:
@@ -44,9 +57,11 @@ services:
       - ./auth_service:/app
     depends_on:
       - auth_db
+      - rabbitmq
     ports:
       - "8000:8000"
 
 volumes:
   auth_db_data:
   chat_db_data:
+  rabbitmq_data:
